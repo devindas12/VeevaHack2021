@@ -4,19 +4,17 @@ var obj_csv = {
 };
  
 function readImage(input) {
-    console.log(input)
+    //csvData = []
     if (input.files && input.files[0]) {
         let reader = new FileReader();
         reader.readAsBinaryString(input.files[0]);
         reader.onload = function (e) {
-            console.log(e);
             obj_csv.size = e.total;
             obj_csv.dataFile = e.target.result
-                        console.log(obj_csv.dataFile)
-                        parseData(obj_csv.dataFile)
+            csvData = parseData(obj_csv.dataFile)
+            csvData.shift()
         }
     }
-    document.write(obj_csv.dataFile[0]);
 }
  
 function parseData(data){
@@ -25,5 +23,9 @@ function parseData(data){
     lbreak.forEach(res => {
         csvData.push(res.split(","));
     });
-    console.table(csvData);
+    return csvData
+}
+
+function generateData(){
+    console.log(csvData)
 }
