@@ -1,3 +1,44 @@
+// function test() {
+//     k = 10
+//     n = 4
+//     duration = 250
+//     const svg = d3.create("svg")
+//     .attr("viewBox", [0, 0, width, height]);
+    
+//     const updateBars = bars(svg);
+//     const updateAxis = axis(svg);
+//     const updateLabels = labels(svg);
+//     const updateTicker = ticker(svg);
+    
+//     yield svg.node();
+    
+//     for (const keyframe of keyframes) {
+//     const transition = svg.transition()
+//       .duration(duration)
+//       .ease(d3.easeLinear);
+    
+//     // Extract the top bar’s value.
+//     x.domain([0, keyframe[1][0].value]);
+    
+//     updateAxis(keyframe, transition);
+//     updateBars(keyframe, transition);
+//     updateLabels(keyframe, transition);
+//     updateTicker(keyframe, transition);
+    
+//     invalidation.then(() => svg.interrupt());
+//     await transition.end();
+//     }
+// }
+
+// function rank(value) {
+//     const data = Array.from(names, name => ({name, value: value(name)}));
+//     data.sort((a, b) => d3.descending(a.value, b.value));
+//     for (let i = 0; i < data.length; ++i) data[i].rank = Math.min(n, i);
+//     return data;
+//   }
+
+// //--------------------------------------------------------------------------------------
+
 var obj_csv = {
     size:0,
     dataFile:[]
@@ -17,7 +58,7 @@ function readImage(input) {
         }
     }
 }
- 
+
 function parseData(data){
     let csvData = [];
     let lbreak = data.split("\n");
@@ -27,15 +68,6 @@ function parseData(data){
 
     return csvData
 }
-
-// function toArrayOfObj(csvData) {
-//     var objs = csvData.map(function(x) { 
-//         return { 
-//             new1: x[0], 
-//             lng: x[1] 
-//         }; 
-//         });
-// }
 
 function generateData(){
     console.log(csvData)
