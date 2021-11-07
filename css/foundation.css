@@ -2518,7 +2518,7 @@ code, .code-inline {
       background-color: #fff;
       color: #ec9c41; 
       font-size: 20px;
-      font-family: Futura, “Trebuchet MS”, Arial, sans-serif;
+      font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
       margin: 10px;
       padding: 10px;
     }

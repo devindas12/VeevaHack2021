@@ -295,7 +295,6 @@ function BarChartRace(chartId, extendedSettings) {
         .transition(transition)
         .attr("x", ({ value }) => xAxisScale(value) + titlePadding)
         .tween("text", function({ value }) {
-          i+=1
           const interpolateStartValue =
             elapsedTime === chartSettings.duration
               ? this.currentValue || 0
