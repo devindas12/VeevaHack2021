@@ -15,19 +15,24 @@ button {
 
 svg {
   margin: 40px;
+  display: block;
+  margin: auto;
 }
 
 .chart-container .chart-title {
-  font-size: 18px;
-  fill: #d3d3d3;
+  font-size: 20px;
+  fill: rgb(236, 157, 65);
+  font-family: Futura, “Trebuchet MS”, Arial, sans-serif;
+  justify-content: center;
   font-weight: bold;
   text-anchor: middle;
   dominant-baseline: center;
 }
 
 .chart-container .current-date {
-  font-size: 45px;
-  fill: #d3d3d3;
+  font-size: 30px;
+  fill: rgb(236, 157, 65);
+  font-family: Futura, “Trebuchet MS”, Arial, sans-serif;
   text-anchor: end;
 }
 
@@ -46,12 +51,13 @@ svg {
 }
 
 .columns .column-container .column-rect {
-  fill: tomato;
+  fill: rgb(236, 157, 65);
 }
 
 .columns .column-container .column-title {
   text-anchor: end;
-  fill: white;
+  fill: rgb(54, 70, 97);
+  font-family: Futura, “Trebuchet MS”, Arial, sans-serif;
   dominant-baseline: middle;
   font-size: 14px;
 }
