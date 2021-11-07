@@ -17,6 +17,7 @@ svg {
   margin: 40px;
   display: block;
   margin: auto;
+  padding: auto;
 }
 
 .chart-container .chart-title {

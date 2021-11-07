@@ -29,7 +29,6 @@ function readImage(input) {
 
 
 function flash(element){
-  console.log("flash: ", element)
   document.getElementById(element).classList.add('secondary');
   setTimeout(function() {
     document.getElementById(element).classList.remove('secondary');
@@ -454,7 +453,7 @@ function BarChartRace(chartId, extendedSettings) {
       ...extendedSettings
     };
   
-    chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 2;
+    chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 3;
     chartSettings.innerHeight = chartSettings.height - chartSettings.padding * 2;
   
     const chartDataSets = [];
@@ -532,7 +531,7 @@ function BarChartRace(chartId, extendedSettings) {
         .append("rect")
         .attr("class", "column-rect")
         .attr("width", 0)
-        .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
+        .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding))
   
       barGroupsEnter
         .append("text")
@@ -667,7 +666,8 @@ function BarChartRace(chartId, extendedSettings) {
             elapsedTime = chartSettings.duration;
             render(index + 1);
           } else {
-            d3.select("button").text("Play");
+            d3.select(document.getElementById("play").style.display = 'none')
+            //d3.select("button").text("Play");
           }
         })
         .on("interrupt", () => {
@@ -710,7 +710,166 @@ function BarChartRace(chartId, extendedSettings) {
 //------------------------------------------STACKED BAR CHART------------------------------------------
 
 function generateStackedBarChart() {
+    var n = 6, // The number of series.
+    m = 4; // The number of values per series.
+
+    cleanCsvData = cleanForBarChartRace(csvData);
+    stackedData = []
+
+    for (let i = 0; i < cleanCsvData.length; i++) {
+        stackedData[i] = [
+            cleanCsvData[i].dataSet[0].value,
+            cleanCsvData[i].dataSet[1].value,
+            cleanCsvData[i].dataSet[2].value,
+            cleanCsvData[i].dataSet[3].value
+        ];
+    }
+
+    // The xz array has m elements, representing the x-values shared by all series.
+    // The yz array has n elements, representing the y-values of each of the n series.
+    // Each yz[i] is an array of m non-negative numbers representing a y-value for xz[i].
+    // The y01z array has the same structure as yz, but with stacked [y₀, y₁] instead of y.
+    var xz = d3.range(m),
+        yz = stackedData,
+        y01z = d3.stack().keys(d3.range(n))(d3.transpose(yz)),
+        yMax = d3.max(yz, function(y) { return d3.max(y); }),
+        y1Max = d3.max(y01z, function(y) { return d3.max(y, function(d) { return d[1]; }); });
+
+    var svg = d3.select("#stacked-bar-chart"),
+        margin = {top: 40, right: 10, bottom: 20, left: 10},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scaleBand()
+        .domain(xz)
+        .rangeRound([0, width])
+        .padding(0.08);
+
+    var y = d3.scaleLinear()
+        .domain([0, y1Max])
+        .range([height, 0]);
+
+    var color = d3.scaleOrdinal()
+        .domain(d3.range(n))
+
+    var series = g.selectAll(".series")
+    .data(y01z)
+    .enter().append("g")
+        .attr("fill", function(d, i) { return color(i); });
+
+    var rect = series.selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+        .attr("x", function(d, i) { return x(i); })
+        .attr("y", height)
+        .attr("width", x.bandwidth())
+        .attr("height", 0);
+
+    rect.transition()
+        .delay(function(d, i) { return i * 10; })
+        .attr("y", function(d) { return y(d[1]); })
+        .attr("height", function(d) { return y(d[0]) - y(d[1]); });
+
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickSize(0)
+            .tickPadding(6));
+
+    let inputs = d3.selectAll("#stacked-input-form .stacked-input")
+        .on("change", changed);
+
+    var timeout = d3.timeout(function() {
+    d3.select("input[value=\"grouped\"]")
+        .property("checked", true)
+        .dispatch("change");
+    }, 2000);
+
+    function changed() {
+        timeout.stop();
+        if (this.value === "grouped") transitionGrouped();
+        else transitionStacked();
+    }
     
+    function transitionGrouped() {
+        y.domain([0, yMax]);
+
+        rect.transition()
+            .duration(500)
+            .delay(function(d, i) { return i * 10; })
+            .attr("x", function(d, i) { return x(i) + x.bandwidth() / n * this.parentNode.__data__.key; })
+            .attr("width", x.bandwidth() / n)
+            .transition()
+            .attr("y", function(d) { return y(d[1] - d[0]); })
+            .attr("height", function(d) { return y(0) - y(d[1] - d[0]); });
+    }
+
+    function transitionStacked() {
+        y.domain([0, y1Max]);
+
+        rect.transition()
+            .duration(500)
+            .delay(function(d, i) { return i * 10; })
+            .attr("y", function(d) { return y(d[1]); })
+            .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+            .transition()
+            .attr("x", function(d, i) { return x(i); })
+            .attr("width", x.bandwidth());
+    }
+
+    function bumps(m) {
+        var values = [], i, j, w, x, y, z;
+    
+        // Initialize with uniform random values in [0.1, 0.2).
+        for (i = 0; i < m; ++i) {
+        values[i] = 0.1 + 0.1 * Math.random();
+        }
+    
+        // Add five random bumps.
+        for (j = 0; j < 5; ++j) {
+        x = 1 / (0.1 + Math.random());
+        y = 2 * Math.random() - 0.5;
+        z = 10 / (0.1 + Math.random());
+        for (i = 0; i < m; i++) {
+            w = (i / m - y) * z;
+            values[i] += x * Math.exp(-w * w);
+        }
+        }
+    
+        // Ensure all values are positive.
+        for (i = 0; i < m; ++i) {
+        values[i] = Math.max(0, values[i]);
+        }
+    
+}
+
+//------------------------------------------FUTURE PREDICTIONS LINE CHART------------------------------------------
+
+function generatePredictions(){
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+      var data = google.visualization.arrayToDataTable([
+          ['Year', 'Sales', 'Expenses'],
+          ['2004',  1000,      400],
+          ['2005',  1170,      460],
+          ['2006',  660,       1120],
+          ['2007',  1030,      540]
+      ]);
+
+      var options = {
+          title: 'Company Performance',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+      };
+
+      var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+      chart.draw(data, options);
+  }
 }
 
 //------------------------------------------HIERARCHICAL BAR CHART------------------------------------------
