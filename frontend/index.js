@@ -51,18 +51,15 @@ function getMaxSlopesAndIds(){ //numberOfIds
         
         console.log(lrVals)
         console.log(lrModels[i].equation[0])
-        //slopes[csvData[i][0]] = lr.equation[0]
+        // const gradient = result.equation[0];
+        // const yIntercept = result.equation[1];
+        slopes[csvData[i][0]] = lr.equation[0] //Calculate slope for every row (Month as x, new value as y)
+        //get max slope (or top 20-30 or something), these are doctors trending higher
+        //show individual data points month to month
     }
 
 }
 
-// const gradient = result.equation[0];
-// const yIntercept = result.equation[1];
-
-//Calculate slope for every row (Month as x, new value as y)
-//get max slope (or top 20-30 or something), these are doctors trending higher
-//show individual data points month to month
-//use r2 to check reliability of fit (low r2 may show outliers, data not as it seems)
 function cleanForBarChart() {
     finalArray = [];
     // iterate through columns 11 through 16 (inclusive)
