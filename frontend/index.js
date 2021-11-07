@@ -35,9 +35,9 @@
 //     data.sort((a, b) => d3.descending(a.value, b.value));
 //     for (let i = 0; i < data.length; ++i) data[i].rank = Math.min(n, i);
 //     return data;
-//   }
+// }
 
-// //--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 
 var obj_csv = {
     size:0,
@@ -59,6 +59,15 @@ function readImage(input) {
     }
 }
 
+function flash(element){
+  console.log("flash: ", element)
+  document.getElementById(element).classList.add('secondary');
+  setTimeout(function() {
+    document.getElementById(element).classList.remove('secondary');
+  }, 200);
+}
+
+
 function parseData(data){
     let csvData = [];
     let lbreak = data.split("\n");
@@ -70,7 +79,7 @@ function parseData(data){
 }
 
 function generateData(){
-    console.log(csvData)
+    //console.log(csvData)
 }
 
 function getMaxSlopesAndIds(numberTopIds){ //numberOfIds
@@ -99,6 +108,7 @@ function getMaxSlopesAndIds(numberTopIds){ //numberOfIds
     }
 }
 
+//------------------------------------------BAR CHART RACE------------------------------------------
 
 // function generateBoop(){
 //     unemployment = [{division: "Bethesda-Rockville-Frederick, MD Met Div", date: 1, unemployment: 2.6}, {division: "Bethesda-Rockville-Frederick, MD Met Div", date: 2, unemployment: 2.6}, {division: "Bethesda-Rockville-Frederick, MD Met Div", date: 3, unemployment: 2.6}, {division: "Bethesda-Rockville-Frederick, MD Met Div", date: 4, unemployment: 2.6}]
@@ -270,7 +280,7 @@ function getMaxSlopesAndIds(numberTopIds){ //numberOfIds
 
 
 
-function cleanForBarChart() {
+function cleanForBarChartRace() {
     finalArray = [];
     // iterate through columns 11 through 16 (inclusive)
     for (let i = 11; i < 17; i++) {
@@ -309,9 +319,9 @@ function cleanForBarChart() {
 
 function generateBarChartRace() {
     const myChart = new BarChartRace("bar-chart-race");
-    cleanCsvData = cleanForBarChart();
+    cleanCsvData = cleanForBarChartRace();
     myChart
-      .setTitle("Bar Chart Race Title")
+      .setTitle("Total Prescriptions Over Time")
       .addDatasets(cleanCsvData)
       .render();
     
@@ -384,7 +394,7 @@ function BarChartRace(chartId, extendedSettings) {
           secondValue - firstValue
       );
   
-      chartContainer.select(".current-date").text(currentDate);
+      chartContainer.select(".current-date").text("Month " + currentDate);
   
       xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
       yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
@@ -593,3 +603,398 @@ function BarChartRace(chartId, extendedSettings) {
       stop
     };
   }
+
+//------------------------------------------STACKED BAR CHART------------------------------------------
+
+function cleanForStackedBarChart() {
+    finalArray = [];
+    // iterate through columns 11 through 16 (inclusive)
+    for (let i = 11; i < 17; i++) {
+        cholecap = 0;
+        novaitch = 0;
+        nasalclear = 0;
+        zapapain = 0;
+        // iterate through the 1000 doctors
+        for (let j = 0; j < 1000; j++) {
+            if (csvData[j][4] === "Cholecap") {
+                cholecap += parseInt(csvData[j][i]);
+            } else if (csvData[j][4] === "Zap-a-Pain") {
+                zapapain += parseInt(csvData[j][i]);
+            } else if (csvData[j][4] === "Nasalclear") {
+                nasalclear += parseInt(csvData[j][i]);
+            } else if (csvData[j][4] === "Nova-itch") {
+                novaitch += parseInt(csvData[j][i]);
+            }
+        }
+        // we've gotten the monthly sums of each product
+        // add to array
+        let entry = {
+            date : i - 10,
+            dataSet : [
+                {name : "Cholecap", value : cholecap},
+                {name : "Zap-a-Pain", value : zapapain},
+                {name : "Nasalclear", value : nasalclear},
+                {name : "Nova-itch", value : novaitch}
+            ]
+        };
+        finalArray.push(entry);
+    }
+    console.log(finalArray);
+    return finalArray;
+}
+
+function generateStackedBarChart() {
+    var n = 6, // The number of series.
+    m = 4; // The number of values per series.
+
+    cleanCsvData = cleanForBarChartRace(csvData);
+    stackedData = []
+
+    for (let i = 0; i < cleanCsvData.length; i++) {
+        stackedData[i] = [
+            cleanCsvData[i].dataSet[0].value,
+            cleanCsvData[i].dataSet[1].value,
+            cleanCsvData[i].dataSet[2].value,
+            cleanCsvData[i].dataSet[3].value
+        ];
+    }
+
+    // The xz array has m elements, representing the x-values shared by all series.
+    // The yz array has n elements, representing the y-values of each of the n series.
+    // Each yz[i] is an array of m non-negative numbers representing a y-value for xz[i].
+    // The y01z array has the same structure as yz, but with stacked [y₀, y₁] instead of y.
+    var xz = d3.range(m),
+        yz = stackedData,
+        y01z = d3.stack().keys(d3.range(n))(d3.transpose(yz)),
+        yMax = d3.max(yz, function(y) { return d3.max(y); }),
+        y1Max = d3.max(y01z, function(y) { return d3.max(y, function(d) { return d[1]; }); });
+
+    var svg = d3.select("#stacked-bar-chart"),
+        margin = {top: 40, right: 10, bottom: 20, left: 10},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scaleBand()
+        .domain(xz)
+        .rangeRound([0, width])
+        .padding(0.08);
+
+    var y = d3.scaleLinear()
+        .domain([0, y1Max])
+        .range([height, 0]);
+
+    var color = d3.scaleOrdinal()
+        .domain(d3.range(n))
+        .range(d3.schemeCategory20c);
+
+    var series = g.selectAll(".series")
+    .data(y01z)
+    .enter().append("g")
+        .attr("fill", function(d, i) { return color(i); });
+
+    var rect = series.selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+        .attr("x", function(d, i) { return x(i); })
+        .attr("y", height)
+        .attr("width", x.bandwidth())
+        .attr("height", 0);
+
+    rect.transition()
+        .delay(function(d, i) { return i * 10; })
+        .attr("y", function(d) { return y(d[1]); })
+        .attr("height", function(d) { return y(d[0]) - y(d[1]); });
+
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickSize(0)
+            .tickPadding(6));
+
+    let inputs = d3.selectAll("#stacked-input-form .stacked-input")
+        .on("change", changed);
+
+    var timeout = d3.timeout(function() {
+    d3.select("input[value=\"grouped\"]")
+        .property("checked", true)
+        .dispatch("change");
+    }, 2000);
+
+    function changed() {
+        timeout.stop();
+        if (this.value === "grouped") transitionGrouped();
+        else transitionStacked();
+    }
+    
+    function transitionGrouped() {
+        y.domain([0, yMax]);
+
+        rect.transition()
+            .duration(500)
+            .delay(function(d, i) { return i * 10; })
+            .attr("x", function(d, i) { return x(i) + x.bandwidth() / n * this.parentNode.__data__.key; })
+            .attr("width", x.bandwidth() / n)
+            .transition()
+            .attr("y", function(d) { return y(d[1] - d[0]); })
+            .attr("height", function(d) { return y(0) - y(d[1] - d[0]); });
+    }
+
+    function transitionStacked() {
+        y.domain([0, y1Max]);
+
+        rect.transition()
+            .duration(500)
+            .delay(function(d, i) { return i * 10; })
+            .attr("y", function(d) { return y(d[1]); })
+            .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+            .transition()
+            .attr("x", function(d, i) { return x(i); })
+            .attr("width", x.bandwidth());
+    }
+
+    function bumps(m) {
+        var values = [], i, j, w, x, y, z;
+    
+        // Initialize with uniform random values in [0.1, 0.2).
+        for (i = 0; i < m; ++i) {
+        values[i] = 0.1 + 0.1 * Math.random();
+        }
+    
+        // Add five random bumps.
+        for (j = 0; j < 5; ++j) {
+        x = 1 / (0.1 + Math.random());
+        y = 2 * Math.random() - 0.5;
+        z = 10 / (0.1 + Math.random());
+        for (i = 0; i < m; i++) {
+            w = (i / m - y) * z;
+            values[i] += x * Math.exp(-w * w);
+        }
+        }
+    
+        // Ensure all values are positive.
+        for (i = 0; i < m; ++i) {
+        values[i] = Math.max(0, values[i]);
+        }
+    
+        return values;
+    }
+}
+
+//------------------------------------------HIERARCHICAL BAR CHART------------------------------------------
+
+// function generateHierBarChart() {
+//     var margin = {top: 30, right: 120, bottom: 0, left: 120},
+//     width = 960 - margin.left - margin.right,
+//     height = 500 - margin.top - margin.bottom;
+
+//     var x = d3.scaleLinear()
+//         .range([0, width]);
+
+//     var barHeight = 20;
+
+//     var color = d3.scaleOrdinal()
+//         .range(["steelblue", "#ccc"]);
+
+//     var duration = 750,
+//         delay = 25;
+
+//     var partition = d3.partition().size([height, width]);
+
+//     var xAxis = d3.axisBottom(x)
+
+//     var svg = d3.select("body").append("svg")
+//         .attr("width", width + margin.left + margin.right)
+//         .attr("height", height + margin.top + margin.bottom)
+//         .append("g")
+//         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//     svg.append("rect")
+//         .attr("class", "background")
+//         .attr("width", width)
+//         .attr("height", height)
+//         .on("click", up);
+
+//     svg.append("g")
+//         .attr("class", "x axis");
+
+//     svg.append("g")
+//         .attr("class", "y axis")
+//     .append("line")
+//         .attr("y1", "100%");
+
+//     d3.json("readme.json", function(error, root) {
+//     if (error) throw error;
+
+//     partition.nodes(root);
+//     x.domain([0, root.value]).nice();
+//     down(root, 0);
+//     });
+
+//     function down(d, i) {
+//     if (!d.children || this.__transition__) return;
+//     var end = duration + d.children.length * delay;
+
+//     // Mark any currently-displayed bars as exiting.
+//     var exit = svg.selectAll(".enter")
+//         .attr("class", "exit");
+
+//     // Entering nodes immediately obscure the clicked-on bar, so hide it.
+//     exit.selectAll("rect").filter(function(p) { return p === d; })
+//         .style("fill-opacity", 1e-6);
+
+//     // Enter the new bars for the clicked-on data.
+//     // Per above, entering bars are immediately visible.
+//     var enter = bar(d)
+//         .attr("transform", stack(i))
+//         .style("opacity", 1);
+
+//     // Have the text fade-in, even though the bars are visible.
+//     // Color the bars as parents; they will fade to children if appropriate.
+//     enter.select("text").style("fill-opacity", 1e-6);
+//     enter.select("rect").style("fill", color(true));
+
+//     // Update the x-scale domain.
+//     x.domain([0, d3.max(d.children, function(d) { return d.value; })]).nice();
+
+//     // Update the x-axis.
+//     svg.selectAll(".x.axis").transition()
+//         .duration(duration)
+//         .call(xAxis);
+
+//     // Transition entering bars to their new position.
+//     var enterTransition = enter.transition()
+//         .duration(duration)
+//         .delay(function(d, i) { return i * delay; })
+//         .attr("transform", function(d, i) { return "translate(0," + barHeight * i * 1.2 + ")"; });
+
+//     // Transition entering text.
+//     enterTransition.select("text")
+//         .style("fill-opacity", 1);
+
+//     // Transition entering rects to the new x-scale.
+//     enterTransition.select("rect")
+//         .attr("width", function(d) { return x(d.value); })
+//         .style("fill", function(d) { return color(!!d.children); });
+
+//     // Transition exiting bars to fade out.
+//     var exitTransition = exit.transition()
+//         .duration(duration)
+//         .style("opacity", 1e-6)
+//         .remove();
+
+//     // Transition exiting bars to the new x-scale.
+//     exitTransition.selectAll("rect")
+//         .attr("width", function(d) { return x(d.value); });
+
+//     // Rebind the current node to the background.
+//     svg.select(".background")
+//         .datum(d)
+//         .transition()
+//         .duration(end);
+
+//     d.index = i;
+//     }
+
+//     function up(d) {
+//     if (!d.parent || this.__transition__) return;
+//     var end = duration + d.children.length * delay;
+
+//     // Mark any currently-displayed bars as exiting.
+//     var exit = svg.selectAll(".enter")
+//         .attr("class", "exit");
+
+//     // Enter the new bars for the clicked-on data's parent.
+//     var enter = bar(d.parent)
+//         .attr("transform", function(d, i) { return "translate(0," + barHeight * i * 1.2 + ")"; })
+//         .style("opacity", 1e-6);
+
+//     // Color the bars as appropriate.
+//     // Exiting nodes will obscure the parent bar, so hide it.
+//     enter.select("rect")
+//         .style("fill", function(d) { return color(!!d.children); })
+//         .filter(function(p) { return p === d; })
+//         .style("fill-opacity", 1e-6);
+
+//     // Update the x-scale domain.
+//     x.domain([0, d3.max(d.parent.children, function(d) { return d.value; })]).nice();
+
+//     // Update the x-axis.
+//     svg.selectAll(".x.axis").transition()
+//         .duration(duration)
+//         .call(xAxis);
+
+//     // Transition entering bars to fade in over the full duration.
+//     var enterTransition = enter.transition()
+//         .duration(end)
+//         .style("opacity", 1);
+
+//     // Transition entering rects to the new x-scale.
+//     // When the entering parent rect is done, make it visible!
+//     enterTransition.select("rect")
+//         .attr("width", function(d) { return x(d.value); })
+//         .each("end", function(p) { if (p === d) d3.select(this).style("fill-opacity", null); });
+
+//     // Transition exiting bars to the parent's position.
+//     var exitTransition = exit.selectAll("g").transition()
+//         .duration(duration)
+//         .delay(function(d, i) { return i * delay; })
+//         .attr("transform", stack(d.index));
+
+//     // Transition exiting text to fade out.
+//     exitTransition.select("text")
+//         .style("fill-opacity", 1e-6);
+
+//     // Transition exiting rects to the new scale and fade to parent color.
+//     exitTransition.select("rect")
+//         .attr("width", function(d) { return x(d.value); })
+//         .style("fill", color(true));
+
+//     // Remove exiting nodes when the last child has finished transitioning.
+//     exit.transition()
+//         .duration(end)
+//         .remove();
+
+//     // Rebind the current parent to the background.
+//     svg.select(".background")
+//         .datum(d.parent)
+//         .transition()
+//         .duration(end);
+//     }
+
+//     // Creates a set of bars for the given data node, at the specified index.
+//     function bar(d) {
+//     var bar = svg.insert("g", ".y.axis")
+//         .attr("class", "enter")
+//         .attr("transform", "translate(0,5)")
+//         .selectAll("g")
+//         .data(d.children)
+//         .enter().append("g")
+//         .style("cursor", function(d) { return !d.children ? null : "pointer"; })
+//         .on("click", down);
+
+//     bar.append("text")
+//         .attr("x", -6)
+//         .attr("y", barHeight / 2)
+//         .attr("dy", ".35em")
+//         .style("text-anchor", "end")
+//         .text(function(d) { return d.name; });
+
+//     bar.append("rect")
+//         .attr("width", function(d) { return x(d.value); })
+//         .attr("height", barHeight);
+
+//     return bar;
+//     }
+
+//     // A stateful closure for stacking bars horizontally.
+//     function stack(i) {
+//     var x0 = 0;
+//     return function(d) {
+//         var tx = "translate(" + x0 + "," + barHeight * i * 1.2 + ")";
+//         x0 += x(d.value);
+//         return tx;
+//     };
+//     }
+// }
