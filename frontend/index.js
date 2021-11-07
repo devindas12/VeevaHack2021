@@ -35,9 +35,9 @@
 //     data.sort((a, b) => d3.descending(a.value, b.value));
 //     for (let i = 0; i < data.length; ++i) data[i].rank = Math.min(n, i);
 //     return data;
-//   }
+// }
 
-// //--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 
 var obj_csv = {
     size:0,
@@ -96,9 +96,9 @@ function getMaxSlopesAndIds(numberTopIds){ //numberOfIds
     // }
 }
 
+//------------------------------------------BAR CHART RACE------------------------------------------
 
-
-function cleanForBarChart() {
+function cleanForBarChartRace() {
     finalArray = [];
     // iterate through columns 11 through 16 (inclusive)
     for (let i = 11; i < 17; i++) {
@@ -137,7 +137,7 @@ function cleanForBarChart() {
 
 function generateBarChartRace() {
     const myChart = new BarChartRace("bar-chart-race");
-    cleanCsvData = cleanForBarChart();
+    cleanCsvData = cleanForBarChartRace();
     myChart
       .setTitle("Bar Chart Race Title")
       .addDatasets(cleanCsvData)
@@ -421,3 +421,169 @@ function BarChartRace(chartId, extendedSettings) {
       stop
     };
   }
+
+//------------------------------------------STACKED BAR CHART------------------------------------------
+
+function cleanForStackedBarChart() {
+    finalArray = [];
+    // iterate through columns 11 through 16 (inclusive)
+    for (let i = 11; i < 17; i++) {
+        cholecap = 0;
+        novaitch = 0;
+        nasalclear = 0;
+        zapapain = 0;
+        // iterate through the 1000 doctors
+        for (let j = 0; j < 1000; j++) {
+            if (csvData[j][4] === "Cholecap") {
+                cholecap += parseInt(csvData[j][i]);
+            } else if (csvData[j][4] === "Zap-a-Pain") {
+                zapapain += parseInt(csvData[j][i]);
+            } else if (csvData[j][4] === "Nasalclear") {
+                nasalclear += parseInt(csvData[j][i]);
+            } else if (csvData[j][4] === "Nova-itch") {
+                novaitch += parseInt(csvData[j][i]);
+            }
+        }
+        // we've gotten the monthly sums of each product
+        // add to array
+        let entry = {
+            date : i - 10,
+            dataSet : [
+                {name : "Cholecap", value : cholecap},
+                {name : "Zap-a-Pain", value : zapapain},
+                {name : "Nasalclear", value : nasalclear},
+                {name : "Nova-itch", value : novaitch}
+            ]
+        };
+        finalArray.push(entry);
+    }
+    console.log(finalArray);
+    return finalArray;
+}
+
+function generateStackedBarChart() {
+    var n = 6, // The number of series.
+    m = 58; // The number of values per series.
+
+    // The xz array has m elements, representing the x-values shared by all series.
+    // The yz array has n elements, representing the y-values of each of the n series.
+    // Each yz[i] is an array of m non-negative numbers representing a y-value for xz[i].
+    // The y01z array has the same structure as yz, but with stacked [y₀, y₁] instead of y.
+    var xz = d3.range(m),
+        yz = d3.range(n).map(function() { return bumps(m); }),
+        y01z = d3.stack().keys(d3.range(n))(d3.transpose(yz)),
+        yMax = d3.max(yz, function(y) { return d3.max(y); }),
+        y1Max = d3.max(y01z, function(y) { return d3.max(y, function(d) { return d[1]; }); });
+
+    var svg = d3.select("#stacked-bar-chart"),
+        margin = {top: 40, right: 10, bottom: 20, left: 10},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scaleBand()
+        .domain(xz)
+        .rangeRound([0, width])
+        .padding(0.08);
+
+    var y = d3.scaleLinear()
+        .domain([0, y1Max])
+        .range([height, 0]);
+
+    var color = d3.scaleOrdinal()
+        .domain(d3.range(n))
+        .range(d3.schemeCategory20c);
+
+    var series = g.selectAll(".series")
+    .data(y01z)
+    .enter().append("g")
+        .attr("fill", function(d, i) { return color(i); });
+
+    var rect = series.selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+        .attr("x", function(d, i) { return x(i); })
+        .attr("y", height)
+        .attr("width", x.bandwidth())
+        .attr("height", 0);
+
+    rect.transition()
+        .delay(function(d, i) { return i * 10; })
+        .attr("y", function(d) { return y(d[1]); })
+        .attr("height", function(d) { return y(d[0]) - y(d[1]); });
+
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickSize(0)
+            .tickPadding(6));
+
+    let inputs = d3.selectAll("#stacked-input-form .stacked-input")
+        .on("change", changed);
+
+    var timeout = d3.timeout(function() {
+    d3.select("input[value=\"grouped\"]")
+        .property("checked", true)
+        .dispatch("change");
+    }, 2000);
+
+    function changed() {
+        timeout.stop();
+        if (this.value === "grouped") transitionGrouped();
+        else transitionStacked();
+    }
+    
+    function transitionGrouped() {
+        y.domain([0, yMax]);
+
+        rect.transition()
+            .duration(500)
+            .delay(function(d, i) { return i * 10; })
+            .attr("x", function(d, i) { return x(i) + x.bandwidth() / n * this.parentNode.__data__.key; })
+            .attr("width", x.bandwidth() / n)
+            .transition()
+            .attr("y", function(d) { return y(d[1] - d[0]); })
+            .attr("height", function(d) { return y(0) - y(d[1] - d[0]); });
+    }
+
+    function transitionStacked() {
+        y.domain([0, y1Max]);
+
+        rect.transition()
+            .duration(500)
+            .delay(function(d, i) { return i * 10; })
+            .attr("y", function(d) { return y(d[1]); })
+            .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+            .transition()
+            .attr("x", function(d, i) { return x(i); })
+            .attr("width", x.bandwidth());
+    }
+
+    function bumps(m) {
+        var values = [], i, j, w, x, y, z;
+    
+        // Initialize with uniform random values in [0.1, 0.2).
+        for (i = 0; i < m; ++i) {
+        values[i] = 0.1 + 0.1 * Math.random();
+        }
+    
+        // Add five random bumps.
+        for (j = 0; j < 5; ++j) {
+        x = 1 / (0.1 + Math.random());
+        y = 2 * Math.random() - 0.5;
+        z = 10 / (0.1 + Math.random());
+        for (i = 0; i < m; i++) {
+            w = (i / m - y) * z;
+            values[i] += x * Math.exp(-w * w);
+        }
+        }
+    
+        // Ensure all values are positive.
+        for (i = 0; i < m; ++i) {
+        values[i] = Math.max(0, values[i]);
+        }
+    
+        return values;
+    }
+}
