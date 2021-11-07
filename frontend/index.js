@@ -38,6 +38,7 @@
 // }
 
 //--------------------------------------------------------------------------------------
+// import Dropzone from "dropzone"
 
 var obj_csv = {
     size:0,
@@ -58,6 +59,16 @@ function readImage(input) {
         }
     }
 }
+
+//  const{Dropzone} = new Dropzone("dropzone")
+
+// function fileUpload(){
+//   var myDropzone = new Dropzone()
+//   myDropzone.on("addedfile", file => {
+//     console.log("File added: ", file.name)
+//   })
+// }
+
 
 function flash(element){
   console.log("flash: ", element)
