@@ -38,7 +38,7 @@
 //   }
 
 // //--------------------------------------------------------------------------------------
-
+var i = 0
 var obj_csv = {
     size:0,
     dataFile:[]
@@ -59,6 +59,15 @@ function readImage(input) {
     }
 }
 
+function flash(element){
+  console.log("flash: ", element)
+  document.getElementById(element).classList.add('secondary');
+  setTimeout(function() {
+    document.getElementById(element).classList.remove('secondary');
+  }, 200);
+}
+
+
 function parseData(data){
     let csvData = [];
     let lbreak = data.split("\n");
@@ -70,7 +79,7 @@ function parseData(data){
 }
 
 function generateData(){
-    console.log(csvData)
+    //console.log(csvData)
 }
 
 function getMaxSlopesAndIds(numberTopIds){ //numberOfIds
@@ -139,7 +148,7 @@ function generateBarChartRace() {
     const myChart = new BarChartRace("bar-chart-race");
     cleanCsvData = cleanForBarChart();
     myChart
-      .setTitle("Bar Chart Race Title")
+      .setTitle("Total Prescriptions Over Time")
       .addDatasets(cleanCsvData)
       .render();
     
@@ -212,7 +221,7 @@ function BarChartRace(chartId, extendedSettings) {
           secondValue - firstValue
       );
   
-      chartContainer.select(".current-date").text(currentDate);
+      chartContainer.select(".current-date").text("Month " + currentDate);
   
       xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
       yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
@@ -286,6 +295,7 @@ function BarChartRace(chartId, extendedSettings) {
         .transition(transition)
         .attr("x", ({ value }) => xAxisScale(value) + titlePadding)
         .tween("text", function({ value }) {
+          i+=1
           const interpolateStartValue =
             elapsedTime === chartSettings.duration
               ? this.currentValue || 0

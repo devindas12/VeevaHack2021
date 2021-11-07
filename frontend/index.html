@@ -3,16 +3,19 @@
         <script src='https://d3js.org/d3.v4.min.js'></script>
         <script src=https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.min.js></script>
         <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="index.css">
+        <link rel="stylesheet" href="../css/foundation.css">
         <script src = "index.js"></script>
     </head>
     <body>
-        <h1>wtf</h1>
+        <h1 class="center-screen" id='title'>Veeva Systems - Prescriber Data</h1>
         <input type="file" id="uploadfile" onChange="readImage(this)">
-        <button onClick="generateData()">Generate</button>
-        <button onClick="generateBarChartRace()">Generate Bar Chart Race</button>
-        <button onClick="getMaxSlopesAndIds(20)">GgettheSlopeBOYSSS</button>
 
-        <button>Stop</button>
+        <div class="center-screen">
+          <button id="button1" class="button custom" onClick="flash(this.id); generateData()">Top Doctors</button>
+          <button id="button2" class="button custom" onClick="flash(this.id); generateBarChartRace()">Trend of Total Prescriptions</button>
+          <button id="button3" class="button custom" onClick="flash(this.id); getMaxSlopesAndIds(20)">Future Predictions</button>
+        </div>
         <svg id="bar-chart-race">
           <g class="chart-container">
             <text class="chart-title"></text>
@@ -26,3 +29,4 @@
     </body>
 </html>
   
+<!-- 236, 157, 65 -->
