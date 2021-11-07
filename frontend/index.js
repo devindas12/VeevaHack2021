@@ -28,37 +28,34 @@ function parseData(data){
     return csvData
 }
 
-// function toArrayOfObj(csvData) {
-//     var objs = csvData.map(function(x) { 
-//         return { 
-//             new1: x[0], 
-//             lng: x[1] 
-//         }; 
-//         });
-// }
-
 function generateData(){
     console.log(csvData)
 }
 
-function getMaxSlopesAndIds(){ //numberOfIds
+function getMaxSlopesAndIds(numberTopIds){ //numberOfIds
     var slopes = {} //create dictionary to hold slopes with ids as key
-    var maxIds = [] //create list to house the id's with highest slopes (greatest increase in demand)
+    var maxIds = {} //create dictionary to house the id's with highest slopes (greatest increase in demand)
     var lrModels = []
     for(let i = 0; i < csvData.length; i++) {
         let lrVals = [[1, parseInt(csvData[i][5])], [2, parseInt(csvData[i][6])], [3, parseInt(csvData[i][7])], [4, parseInt(csvData[i][8])], [5, parseInt(csvData[i][9])], [6, parseInt(csvData[i][10])]] //store pair Values in an Array
         lrModels[i] = regression.linear(lrVals);
         
-        console.log(lrVals)
-        console.log(lrModels[i].equation[0])
         // const gradient = result.equation[0];
         // const yIntercept = result.equation[1];
-        slopes[csvData[i][0]] = lr.equation[0] //Calculate slope for every row (Month as x, new value as y)
-        //get max slope (or top 20-30 or something), these are doctors trending higher
-        //show individual data points month to month
+        slopes[csvData[i][0]] = lrModels[i].equation[0] //Calculate slope for every row (Month as x, new value as y)
     }
-
+    //get max slope (or top 20-30 or something), these are doctors trending higher, faster
+    
+    // var b = { '1': 0.02, '2': 0.87, '3': 0.54, '4': 0.09, '5': 0.74 };
+    var arr = Object.keys( slopes ).map(function ( key ) { return slopes[key]; });
+    var max = Math.max.apply( null, arr );
+    console.log(max)
+    // for(let j = 0; j < numberTopIds; j++){
+    //     var max = Math.max.apply( null, arr );
+    // }
 }
+
+
 
 function cleanForBarChart() {
     finalArray = [];
