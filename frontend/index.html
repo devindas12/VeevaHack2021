@@ -12,7 +12,7 @@
         <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
         <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css"/>
         <script src = "index.js"></script>
-        <script type="text/javascript">
+        <!-- <script type="text/javascript">
             google.charts.load('current', {'packages':['corechart']});
             google.charts.setOnLoadCallback(drawChart);
     
@@ -35,7 +35,7 @@
     
                 chart.draw(data, options);
             }
-        </script>
+        </script> -->
     </head>
     <body>
         <h1 class="center-screen" id='title'>Veeva Systems - Prescriber Data</h1>
@@ -44,27 +44,31 @@
 
         <div class="center-screen">
           <button id="button1" class="button custom" onClick="flash(this.id); generateData()">Top Doctors</button>
-          <button id="button2" class="button custom" onClick="flash(this.id); generateBarChartRace()">Trend of Total Prescriptions</button>
-          <button id="button3" class="button custom" onClick="flash(this.id); getMaxSlopesAndIds(20)">Future Predictions</button>
+          <button id="button2" class="button custom" onClick="flash(this.id); generateBarChartRace(); generateStackedBarChart()">Trend of Total Prescriptions</button>
+          <button id="button3" class="button custom" onClick="flash(this.id); getMaxSlopesAndIds(20); generatePredictions()">Future Predictions</button>
         </div>
+
+        <button id="play" hidden=true>Play</button>
 
         <div id="curve_chart" style="width: 900px; height: 500px"></div>
         
-        <svg id="bar-chart-race">
-          <g class="chart-container">
-            <text class="chart-title"></text>
-            <g class="x-axis"></g>
-            <g class="y-axis"></g>
-            <g class="columns"></g>
-            <text class="current-date"></text>
-          </g>
-        </svg>
+        <div>
+          <svg id="bar-chart-race">
+            <g class="chart-container">
+              <text class="chart-title"></text>
+              <g class="x-axis"></g>
+              <g class="y-axis"></g>
+              <g class="columns"></g>
+              <text class="current-date"></text>
+            </g>
+          </svg>
+          <svg id="stacked-bar-chart" width="960" height="500"></svg>
+        </div>
 
-        <!-- <form id="stacked-input-form">
+        <form id="stacked-input-form">
           <label><input type="radio" name="mode" value="grouped" class="stacked-input"> Grouped</label>
           <label><input type="radio" name="mode" value="stacked" class="stacked-input" checked> Stacked</label>
         </form>
-        <svg id="stacked-bar-chart" width="960" height="500"></svg> -->
         
     </body>
 </html>

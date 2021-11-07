@@ -71,7 +71,6 @@ function readImage(input) {
 
 
 function flash(element){
-  console.log("flash: ", element)
   document.getElementById(element).classList.add('secondary');
   setTimeout(function() {
     document.getElementById(element).classList.remove('secondary');
@@ -362,7 +361,7 @@ function BarChartRace(chartId, extendedSettings) {
       ...extendedSettings
     };
   
-    chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 2;
+    chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 3;
     chartSettings.innerHeight = chartSettings.height - chartSettings.padding * 2;
   
     const chartDataSets = [];
@@ -440,7 +439,7 @@ function BarChartRace(chartId, extendedSettings) {
         .append("rect")
         .attr("class", "column-rect")
         .attr("width", 0)
-        .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
+        .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding))
   
       barGroupsEnter
         .append("text")
@@ -575,7 +574,8 @@ function BarChartRace(chartId, extendedSettings) {
             elapsedTime = chartSettings.duration;
             render(index + 1);
           } else {
-            d3.select("button").text("Play");
+            d3.select(document.getElementById("play").style.display = 'none')
+            //d3.select("button").text("Play");
           }
         })
         .on("interrupt", () => {
@@ -697,7 +697,6 @@ function generateStackedBarChart() {
 
     var color = d3.scaleOrdinal()
         .domain(d3.range(n))
-        .range(d3.schemeCategory20c);
 
     var series = g.selectAll(".series")
     .data(y01z)
@@ -791,6 +790,33 @@ function generateStackedBarChart() {
     
         return values;
     }
+}
+
+//------------------------------------------FUTURE PREDICTIONS LINE CHART------------------------------------------
+
+function generatePredictions(){
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+      var data = google.visualization.arrayToDataTable([
+          ['Year', 'Sales', 'Expenses'],
+          ['2004',  1000,      400],
+          ['2005',  1170,      460],
+          ['2006',  660,       1120],
+          ['2007',  1030,      540]
+      ]);
+
+      var options = {
+          title: 'Company Performance',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+      };
+
+      var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+      chart.draw(data, options);
+  }
 }
 
 //------------------------------------------HIERARCHICAL BAR CHART------------------------------------------
