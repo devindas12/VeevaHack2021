@@ -1,15 +1,28 @@
 <html>
     <head>
-        <script src = "index.js"></script>
         <script src='https://d3js.org/d3.v4.min.js'></script>
         <script src=https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.min.js></script>
         <link rel="stylesheet" href="styles.css">
+        <script src = "index.js"></script>
     </head>
     <body>
         <h1>wtf</h1>
         <input type="file" id="uploadfile" onChange="readImage(this)">
         <button onClick="generateData()">Generate</button>
-        <button onClick="getMaxSlopesAndIds()">GgettheSlopeBOYSSS</button>
+        <button onClick="generateBarChartRace()">Generate Bar Chart Race</button>
+        <button onClick="getMaxSlopesAndIds(20)">GgettheSlopeBOYSSS</button>
+
+        <button>Stop</button>
+        <svg id="bar-chart-race">
+          <g class="chart-container">
+            <text class="chart-title"></text>
+            <g class="x-axis"></g>
+            <g class="y-axis"></g>
+            <g class="columns"></g>
+            <text class="current-date"></text>
+          </g>
+        </svg>
+        
     </body>
 </html>
   
